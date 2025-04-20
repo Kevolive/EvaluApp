@@ -261,3 +261,10 @@ A continuación se detallan las dependencias utilizadas en el proyecto, organiza
 
 Estas dependencias conforman el ecosistema tecnológico del proyecto, proporcionando las herramientas necesarias para el desarrollo de una API RESTful robusta, segura y bien documentada.
 
+Para Poder crear un post hay que hacerlo de esta manera: 
+{
+  "puntuacion": 4.5,
+  "fechaFinalizacion": "2025-04-20T10:00:00",
+  "examenId": 1,
+  "estudianteId": 2
+}
