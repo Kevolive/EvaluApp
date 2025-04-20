@@ -18,4 +18,8 @@ public class Opcion {
     @ManyToOne
     @JoinColumn(name = "pregunta_id")
     private Pregunta pregunta;
+
+    public void setTextoOpcion(String textoOpcion) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }
