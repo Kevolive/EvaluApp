@@ -20,6 +20,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/examenes")
+// @RequestMapping("/api/admin/examenes")
 @Tag(name = "Examenes", description = "API para gestionar examenes")
 public class ExamenController {
 
