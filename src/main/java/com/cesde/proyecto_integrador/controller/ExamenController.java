@@ -16,6 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.cesde.proyecto_integrador.dto.ExamenRequestDTO;
+import jakarta.validation.Valid;
+
 import java.util.List;
 
 @RestController
@@ -30,56 +33,34 @@ public class ExamenController {
     @Autowired
     private UserRepository userRepository;
 
-    @Operation(
-        summary = "Obtener todos los exámenes",
-        description = "Retorna una lista con todos los exámenes disponibles"
-    )
-    @ApiResponse(
-        responseCode = "200",
-        description = "Lista de exámenes obtenida correctamente",
-        content = @Content(mediaType = "application/json", schema = @Schema(implementation = Examen.class))
-    )
+    @Operation(summary = "Obtener todos los exámenes", description = "Retorna una lista con todos los exámenes disponibles")
+    @ApiResponse(responseCode = "200", description = "Lista de exámenes obtenida correctamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Examen.class)))
     @GetMapping
     public ResponseEntity<List<Examen>> getAllExams() {
         List<Examen> exams = examenService.findAll();
         return ResponseEntity.ok(exams);
     }
 
-    @Operation(
-        summary = "Crear un nuevo examen",
-        description = "Crea un nuevo examen con la información proporcionada"
-    )
-    @ApiResponse(
-        responseCode = "200",
-        description = "Examen creado correctamente",
-        content = @Content(mediaType = "application/json", schema = @Schema(implementation = Examen.class))
-    )
+    @Operation(summary = "Crear un nuevo examen", description = "Crea un nuevo examen con la información proporcionada")
+    @ApiResponse(responseCode = "200", description = "Examen creado correctamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Examen.class)))
     @PostMapping
-    public ResponseEntity<Examen> createExamen(@RequestBody Examen examen) {
-        Long creadorId = examen.getCreador().getId();
+    public ResponseEntity<Examen> createExamen(@Valid @RequestBody ExamenRequestDTO dto) {
 
-        User creador = userRepository.findById(creadorId)
-            .orElseThrow(() -> new RuntimeException("Creador no encontrado con ID: " + creadorId));
+        User creador = userRepository.findById(dto.getCreadorId())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + dto.getCreadorId()));
 
+        Examen examen = new Examen();
+        examen.setTitulo(dto.getTitulo());
+        examen.setDescripcion(dto.getDescripcion());
+        examen.setFechaInicio(dto.getFechaInicio());
+        examen.setFechaFin(dto.getFechaFin());
         examen.setCreador(creador);
-
-        Examen createdExamen = examenService.save(examen);
-        return ResponseEntity.ok(createdExamen);
+        return ResponseEntity.ok(examenService.save(examen));
     }
 
-    @Operation(
-        summary = "Obtener un examen por ID del usuario ",
-        description = "Retorna un examen específico basado en el ID proporcionado"
-    )
-    @ApiResponse(
-        responseCode = "200",
-        description = "Examen encontrado correctamente",
-        content = @Content(mediaType = "application/json", schema = @Schema(implementation = Examen.class))
-    )
-    @ApiResponse(
-        responseCode = "404",
-        description = "Examen no encontrado"
-    )
+    @Operation(summary = "Obtener un examen por ID del usuario ", description = "Retorna un examen específico basado en el ID proporcionado")
+    @ApiResponse(responseCode = "200", description = "Examen encontrado correctamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Examen.class)))
+    @ApiResponse(responseCode = "404", description = "Examen no encontrado")
     @GetMapping("/{id}")
     public ResponseEntity<Examen> getExamenById(
             @Parameter(description = "ID del examen a buscar") @PathVariable Long id) {
@@ -87,19 +68,9 @@ public class ExamenController {
         return ResponseEntity.ok(examen);
     }
 
-    @Operation(
-        summary = "Actualizar un examen",
-        description = "Actualiza un examen existente con la información proporcionada"
-    )
-    @ApiResponse(
-        responseCode = "200",
-        description = "Examen actualizado correctamente",
-        content = @Content(mediaType = "application/json", schema = @Schema(implementation = Examen.class))
-    )
-    @ApiResponse(
-        responseCode = "404",
-        description = "Examen no encontrado"
-    )
+    @Operation(summary = "Actualizar un examen", description = "Actualiza un examen existente con la información proporcionada")
+    @ApiResponse(responseCode = "200", description = "Examen actualizado correctamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Examen.class)))
+    @ApiResponse(responseCode = "404", description = "Examen no encontrado")
     @PutMapping("/{id}")
     public ResponseEntity<Examen> updateExamen(
             @Parameter(description = "ID del examen a actualizar") @PathVariable Long id,
@@ -108,18 +79,9 @@ public class ExamenController {
         return ResponseEntity.ok(updatedExamen);
     }
 
-    @Operation(
-        summary = "Eliminar un examen",
-        description = "Elimina un examen basado en el ID proporcionado"
-    )
-    @ApiResponse(
-        responseCode = "204",
-        description = "Examen eliminado correctamente"
-    )
-    @ApiResponse(
-        responseCode = "404",
-        description = "Examen no encontrado"
-    )
+    @Operation(summary = "Eliminar un examen", description = "Elimina un examen basado en el ID proporcionado")
+    @ApiResponse(responseCode = "204", description = "Examen eliminado correctamente")
+    @ApiResponse(responseCode = "404", description = "Examen no encontrado")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteExamen(
             @Parameter(description = "ID del examen a eliminar") @PathVariable Long id) {

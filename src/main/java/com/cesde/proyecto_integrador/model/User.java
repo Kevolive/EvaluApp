@@ -44,7 +44,7 @@ public class User {
     private Profile profile;
 
     public enum Role {
-        ADMIN,
+        ADMIN, 
         STUDENT,
         TEACHER
     }
