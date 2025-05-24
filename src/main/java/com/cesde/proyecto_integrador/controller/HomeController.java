@@ -37,7 +37,7 @@ public class HomeController {
         response.put("Swagger UI", serverUrl + "swagger-ui/index.html");
         response.put("JSON de OpenAPI", serverUrl + "v3/api-docs");
         response.put("YAML de OpenAPI", serverUrl + "api-docs.yaml");
-        response.put("author", "Jhon Valencia");
+        response.put("author", "Kevin Olivella, Paola Murillo, Marvin Garcìa (Equipo 1)");
 
         return ResponseEntity.ok(response);
     }
