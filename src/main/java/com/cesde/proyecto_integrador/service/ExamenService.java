@@ -1,6 +1,8 @@
 package com.cesde.proyecto_integrador.service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +17,18 @@ public class ExamenService {
     private ExamenRepository examRepository;
 
     public List<Examen> findAll() {
-        return examRepository.findAll();
+        List<Object[]> results = examRepository.findAllBasicData();
+        List<Examen> exams = new ArrayList<>();
+        for (Object[] result : results) {
+            Examen exam = new Examen();
+            exam.setId((Long) result[0]);
+            exam.setTitulo((String) result[1]);
+            exam.setDescripcion((String) result[2]);
+            exam.setFechaInicio((LocalDate) result[3]);
+            exam.setFechaFin((LocalDate) result[4]);
+            exams.add(exam);
+        }
+        return exams;
     }
     public Examen findById(Long id) {
         return examRepository.findById(id)

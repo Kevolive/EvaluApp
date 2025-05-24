@@ -1,5 +1,6 @@
 package com.cesde.proyecto_integrador.controller;
 
+import com.cesde.proyecto_integrador.dto.OpcionDTO;
 import com.cesde.proyecto_integrador.dto.OpcionRequestDTO;
 import com.cesde.proyecto_integrador.model.Opcion;
 import com.cesde.proyecto_integrador.model.Pregunta;
@@ -16,13 +17,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/opciones")
 @Tag(name = "Opciones", description = "API para gestionar opciones de preguntas")
 public class OpcionController {
+
+    private static final Logger log = LoggerFactory.getLogger(OpcionController.class);
 
     @Autowired
     private OpcionRepository opcionRepository;
@@ -57,16 +64,45 @@ public class OpcionController {
     @Operation(summary = "Obtener opciones por pregunta")
     @ApiResponse(responseCode = "200", description = "Lista de opciones encontradas",
             content = @Content(mediaType = "application/json", 
-            schema = @Schema(implementation = Opcion.class)))
+            schema = @Schema(implementation = OpcionDTO.class)))
     @GetMapping("/pregunta/{preguntaId}")
-    public ResponseEntity<List<Opcion>> getOpcionesByPregunta(@PathVariable Long preguntaId) {
-        if (!preguntaRepository.existsById(preguntaId)) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "No existe una pregunta con el ID: " + preguntaId
-            );
+    public ResponseEntity<List<OpcionDTO>> getOpcionesByPregunta(@PathVariable Long preguntaId) {
+        try {
+            log.info("Buscando opciones para la pregunta con ID: {}", preguntaId);
+            
+            if (!preguntaRepository.existsById(preguntaId)) {
+                log.warn("No existe una pregunta con el ID: {}", preguntaId);
+                throw new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "No existe una pregunta con el ID: " + preguntaId
+                );
+            }
+
+            List<Opcion> opciones = opcionRepository.findByPreguntaId(preguntaId);
+            log.info("Opciones encontradas: {}", opciones.size());
+            
+            if (opciones.isEmpty()) {
+                log.warn("No se encontraron opciones para la pregunta con ID: {}", preguntaId);
+                return ResponseEntity.ok(Collections.emptyList());
+            }
+
+            List<OpcionDTO> opcionesDTO = opciones.stream()
+                .map(opcion -> {
+                    OpcionDTO dto = new OpcionDTO();
+                    dto.setId(opcion.getId());
+                    dto.setTextoOpcion(opcion.getTextoOpcion());
+                    dto.setEsCorrecta(opcion.isEsCorrecta());
+                    dto.setPreguntaId(preguntaId);
+                    return dto;
+                })
+                .toList();
+            
+            log.info("Opciones mapeadas exitosamente: {}", opcionesDTO.size());
+            return ResponseEntity.ok(opcionesDTO);
+        } catch (Exception e) {
+            log.error("Error al obtener opciones para la pregunta {}: {}", preguntaId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Collections.emptyList());
         }
-        List<Opcion> opciones = opcionRepository.findByPreguntaId(preguntaId);
-        return ResponseEntity.ok(opciones);
     }
 }

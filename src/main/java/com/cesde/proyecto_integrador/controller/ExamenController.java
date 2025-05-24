@@ -1,9 +1,16 @@
 package com.cesde.proyecto_integrador.controller;
 
+import com.cesde.proyecto_integrador.dto.ExamenDTO;
 import com.cesde.proyecto_integrador.model.Examen;
+import com.cesde.proyecto_integrador.model.Profile;
 import com.cesde.proyecto_integrador.model.User;
 import com.cesde.proyecto_integrador.repository.UserRepository;
 import com.cesde.proyecto_integrador.service.ExamenService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import java.util.Collections;
+
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -23,9 +30,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/examenes")
-// @RequestMapping("/api/admin/examenes")
 @Tag(name = "Examenes", description = "API para gestionar examenes")
 public class ExamenController {
+
+    private static final Logger log = LoggerFactory.getLogger(ExamenController.class);
 
     @Autowired
     private ExamenService examenService;
@@ -33,12 +41,44 @@ public class ExamenController {
     @Autowired
     private UserRepository userRepository;
 
-    @Operation(summary = "Obtener todos los exámenes", description = "Retorna una lista con todos los exámenes disponibles")
-    @ApiResponse(responseCode = "200", description = "Lista de exámenes obtenida correctamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Examen.class)))
+    @Operation(summary = "Obtener todos los exámenes", description = "Retorna una lista con todos los exámenes disponibles en formato DTO")
+    @ApiResponse(responseCode = "200", description = "Lista de exámenes obtenida correctamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ExamenDTO.class)))
     @GetMapping
-    public ResponseEntity<List<Examen>> getAllExams() {
-        List<Examen> exams = examenService.findAll();
-        return ResponseEntity.ok(exams);
+    public ResponseEntity<List<ExamenDTO>> getAllExams() {
+        try {
+            List<Examen> exams = examenService.findAll();
+            List<ExamenDTO> examDTOs = exams.stream()
+                .map(examen -> {
+                    ExamenDTO dto = new ExamenDTO();
+                    dto.setId(examen.getId());
+                    dto.setTitulo(examen.getTitulo());
+                    dto.setDescripcion(examen.getDescripcion());
+                    dto.setFechaInicio(examen.getFechaInicio());
+                    dto.setFechaFin(examen.getFechaFin());
+                    if (examen.getCreador() != null) {
+                        dto.setCreadorId(examen.getCreador().getId());
+                        // Usar el nombre del perfil del usuario si existe
+                        Profile profile = examen.getCreador().getProfile();
+                        if (profile != null) {
+                            dto.setCreadorNombre(profile.getName());
+                        } else {
+                            dto.setCreadorNombre("Sin perfil");
+                        }
+                    }
+                    if (examen.getPreguntas() != null) {
+                        dto.setPreguntasIds(examen.getPreguntas().stream()
+                            .map(pregunta -> pregunta.getId())
+                            .toList());
+                    }
+                    return dto;
+                })
+                .toList();
+            return ResponseEntity.ok(examDTOs);
+        } catch (Exception e) {
+            log.error("Error al obtener los exámenes: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Collections.emptyList());
+        }
     }
 
     @Operation(summary = "Crear un nuevo examen", description = "Crea un nuevo examen con la información proporcionada")

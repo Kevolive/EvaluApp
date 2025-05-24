@@ -9,10 +9,13 @@ import com.cesde.proyecto_integrador.model.Profile;
 import com.cesde.proyecto_integrador.model.User;
 import com.cesde.proyecto_integrador.repository.ProfileRepository;
 import com.cesde.proyecto_integrador.repository.UserRepository;
-import com.cesde.proyecto_integrador.service.UserStudentService;
+import com.cesde.proyecto_integrador.service.UserTeacherService;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
-public class UserStudentServiceImpl implements UserStudentService {
+public class UserTeacherServiceImpl implements UserTeacherService {
 
     @Autowired
     private UserRepository userRepository;
@@ -20,7 +23,6 @@ public class UserStudentServiceImpl implements UserStudentService {
     @Autowired
     private ProfileRepository profileRepository;
 
-    // Profile
     @Override
     public ProfileDTO getProfile(Long userId) {
         User user = userRepository.findById(userId)
@@ -63,6 +65,21 @@ public class UserStudentServiceImpl implements UserStudentService {
         
         profileRepository.save(updateProfile);
     }
+
+    @Override
+    public List<ProfileDTO> getAllTeacherProfiles() {
+        List<User> teachers = userRepository.findAll();
+        return teachers.stream()
+                .filter(user -> user.getRole().equals("TEACHER"))
+                .map(user -> {
+                    Profile profile = user.getProfile();
+                    return new ProfileDTO(
+                            profile.getName() != null ? profile.getName() : "",
+                            profile.getLastName() != null ? profile.getLastName() : "",
+                            profile.getPhone() != null ? profile.getPhone() : "",
+                            profile.getAddress() != null ? profile.getAddress() : "",
+                            profile.getUrlPhoto() != null ? profile.getUrlPhoto() : "");
+                })
+                .collect(Collectors.toList());
     }
-
-
+}

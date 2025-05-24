@@ -38,11 +38,13 @@ public class ResultadoService {
             .orElseThrow(() -> new EntityNotFoundException("Examen no encontrado"));
 
         Resultado resultado = new Resultado();
-        resultado.setPuntuacion(resultadoDTO.getPuntuacion());
-        resultado.setFechaFinalizacion(resultadoDTO.getFechaFinalizacion());
-        resultado.setEstudiante(estudiante);
+        resultado.setUsuario(estudiante);
         resultado.setExamen(examen);
-
+        resultado.setOpcionesSeleccionadas(resultadoDTO.getOpcionesSeleccionadas());
+        
+        // Calcular el puntaje basado en las opciones seleccionadas
+        resultado.calcularPuntaje();
+        
         return resultadoRepository.save(resultado);
     }
 
@@ -55,10 +57,10 @@ public class ResultadoService {
             .orElseThrow(() -> new EntityNotFoundException("Resultado no encontrado"));
     }
 
-    public List<Resultado> findByEstudianteId(Long estudianteId) {
-        User estudiante = userRepository.findById(estudianteId)
-            .orElseThrow(() -> new EntityNotFoundException("Estudiante no encontrado"));
-        return resultadoRepository.findByEstudiante(estudiante);
+    public List<Resultado> findByEstudianteId(Long usuarioId) {
+        User usuario = userRepository.findById(usuarioId)
+            .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+        return resultadoRepository.findByUsuario(usuario);
     }
 
     public void delete(Long id) {

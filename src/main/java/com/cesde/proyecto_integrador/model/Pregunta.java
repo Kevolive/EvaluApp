@@ -2,6 +2,8 @@ package com.cesde.proyecto_integrador.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "preguntas")
@@ -17,9 +19,15 @@ public class Pregunta {
     private TipoPregunta tipoPregunta; // Ej: SELECCION_UNICA, MULTIPLE, TEXTO
 
     // Relación con Examen
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "examen_id")
+    @JsonIgnore
     private Examen examen;
+
+    // Relación bidireccional con Opcion
+    @OneToMany(mappedBy = "pregunta", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Opcion> opciones;
 
     public enum TipoPregunta {
         SELECCION_UNICA,
