@@ -6,10 +6,14 @@ import com.cesde.proyecto_integrador.model.Profile;
 import com.cesde.proyecto_integrador.model.User;
 import com.cesde.proyecto_integrador.repository.UserRepository;
 import com.cesde.proyecto_integrador.service.ExamenService;
+import com.cesde.proyecto_integrador.repository.PreguntaRepository;
+import com.cesde.proyecto_integrador.model.Pregunta;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import java.util.Collections;
+
 
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,6 +44,17 @@ public class ExamenController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PreguntaRepository PreguntaRepository;
+
+    @Operation(summary = "Obtener preguntas de un examen", description = "Retorna todas las preguntas asociadas a un examen")
+@ApiResponse(responseCode = "200", description = "Preguntas obtenidas correctamente", content = @Content(mediaType = "application/json"))
+@GetMapping("/{id}/preguntas")
+public ResponseEntity<List<Pregunta>> getPreguntasByExamen(@PathVariable Long id) {
+    List<Pregunta> preguntas = PreguntaRepository.findByExamenId(id);
+    return ResponseEntity.ok(preguntas);
+}
 
     @Operation(summary = "Obtener todos los exámenes", description = "Retorna una lista con todos los exámenes disponibles en formato DTO")
     @ApiResponse(responseCode = "200", description = "Lista de exámenes obtenida correctamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ExamenDTO.class)))
