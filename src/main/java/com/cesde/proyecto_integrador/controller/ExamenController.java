@@ -6,11 +6,13 @@ import com.cesde.proyecto_integrador.model.Profile;
 import com.cesde.proyecto_integrador.model.User;
 import com.cesde.proyecto_integrador.repository.UserRepository;
 import com.cesde.proyecto_integrador.service.ExamenService;
+import com.cesde.proyecto_integrador.repository.PreguntaRepository;
+import com.cesde.proyecto_integrador.model.Pregunta;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import java.util.Collections;
-
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -42,6 +44,17 @@ public class ExamenController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PreguntaRepository PreguntaRepository;
+
+    @Operation(summary = "Obtener preguntas de un examen", description = "Retorna todas las preguntas asociadas a un examen")
+    @ApiResponse(responseCode = "200", description = "Preguntas obtenidas correctamente", content = @Content(mediaType = "application/json"))
+    @GetMapping("/{id}/preguntas")
+    public ResponseEntity<List<Pregunta>> getPreguntasByExamen(@PathVariable Long id) {
+        List<Pregunta> preguntas = PreguntaRepository.findByExamenId(id);
+        return ResponseEntity.ok(preguntas);
+    }
+
     @Operation(summary = "Obtener todos los exámenes", description = "Retorna una lista con todos los exámenes disponibles en formato DTO")
     @ApiResponse(responseCode = "200", description = "Lista de exámenes obtenida correctamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ExamenDTO.class)))
     @GetMapping
@@ -49,36 +62,36 @@ public class ExamenController {
         try {
             List<Examen> exams = examenService.findAll();
             List<ExamenDTO> examDTOs = exams.stream()
-                .map(examen -> {
-                    ExamenDTO dto = new ExamenDTO();
-                    dto.setId(examen.getId());
-                    dto.setTitulo(examen.getTitulo());
-                    dto.setDescripcion(examen.getDescripcion());
-                    dto.setFechaInicio(examen.getFechaInicio());
-                    dto.setFechaFin(examen.getFechaFin());
-                    if (examen.getCreador() != null) {
-                        dto.setCreadorId(examen.getCreador().getId());
-                        // Usar el nombre del perfil del usuario si existe
-                        Profile profile = examen.getCreador().getProfile();
-                        if (profile != null) {
-                            dto.setCreadorNombre(profile.getName());
-                        } else {
-                            dto.setCreadorNombre("Sin perfil");
+                    .map(examen -> {
+                        ExamenDTO dto = new ExamenDTO();
+                        dto.setId(examen.getId());
+                        dto.setTitulo(examen.getTitulo());
+                        dto.setDescripcion(examen.getDescripcion());
+                        dto.setFechaInicio(examen.getFechaInicio());
+                        dto.setFechaFin(examen.getFechaFin());
+                        if (examen.getCreador() != null) {
+                            dto.setCreadorId(examen.getCreador().getId());
+                            // Usar el nombre del perfil del usuario si existe
+                            Profile profile = examen.getCreador().getProfile();
+                            if (profile != null) {
+                                dto.setCreadorNombre(profile.getName());
+                            } else {
+                                dto.setCreadorNombre("Sin perfil");
+                            }
                         }
-                    }
-                    if (examen.getPreguntas() != null) {
-                        dto.setPreguntasIds(examen.getPreguntas().stream()
-                            .map(pregunta -> pregunta.getId())
-                            .toList());
-                    }
-                    return dto;
-                })
-                .toList();
+                        if (examen.getPreguntas() != null) {
+                            dto.setPreguntasIds(examen.getPreguntas().stream()
+                                    .map(pregunta -> pregunta.getId())
+                                    .toList());
+                        }
+                        return dto;
+                    })
+                    .toList();
             return ResponseEntity.ok(examDTOs);
         } catch (Exception e) {
             log.error("Error al obtener los exámenes: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Collections.emptyList());
+                    .body(Collections.emptyList());
         }
     }
 
