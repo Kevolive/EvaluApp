@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.cesde.proyecto_integrador.dto.ExamenRequestDTO;
 import jakarta.validation.Valid;
@@ -81,22 +82,68 @@ public class ExamenController {
         }
     }
 
+
     @Operation(summary = "Crear un nuevo examen", description = "Crea un nuevo examen con la información proporcionada")
-    @ApiResponse(responseCode = "200", description = "Examen creado correctamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Examen.class)))
-    @PostMapping
-    public ResponseEntity<Examen> createExamen(@Valid @RequestBody ExamenRequestDTO dto) {
-
+@ApiResponse(responseCode = "201", description = "Examen creado correctamente", 
+    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ExamenDTO.class)))
+@PostMapping
+public ResponseEntity<ExamenDTO> createExamen(@Valid @RequestBody ExamenRequestDTO dto) {
+    try {
+        // Validar existencia del creador
         User creador = userRepository.findById(dto.getCreadorId())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + dto.getCreadorId()));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado con ID: " + dto.getCreadorId()));
 
+        // Crear entidad examen
         Examen examen = new Examen();
         examen.setTitulo(dto.getTitulo());
         examen.setDescripcion(dto.getDescripcion());
         examen.setFechaInicio(dto.getFechaInicio());
         examen.setFechaFin(dto.getFechaFin());
         examen.setCreador(creador);
-        return ResponseEntity.ok(examenService.save(examen));
+
+        // Guardar examen
+        Examen examenGuardado = examenService.save(examen);
+
+        // Convertir a DTO para la respuesta
+        ExamenDTO response = new ExamenDTO();
+        response.setId(examenGuardado.getId());
+        response.setTitulo(examenGuardado.getTitulo());
+        response.setDescripcion(examenGuardado.getDescripcion());
+        response.setFechaInicio(examenGuardado.getFechaInicio());
+        response.setFechaFin(examenGuardado.getFechaFin());
+        response.setCreadorId(creador.getId());
+
+        if (creador.getProfile() != null) {
+            response.setCreadorNombre(creador.getProfile().getName());
+        } else {
+            response.setCreadorNombre("Sin perfil");
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
+    } catch (ResponseStatusException e) {
+        throw e; // 404 si no encuentra al usuario
+    } catch (Exception e) {
+        // Error inesperado
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al crear el examen", e);
     }
+}
+    // @Operation(summary = "Crear un nuevo examen", description = "Crea un nuevo examen con la información proporcionada")
+    // @ApiResponse(responseCode = "200", description = "Examen creado correctamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Examen.class)))
+    // @PostMapping
+    // public ResponseEntity<Examen> createExamen(@Valid @RequestBody ExamenRequestDTO dto) {
+
+    //     User creador = userRepository.findById(dto.getCreadorId())
+    //             .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + dto.getCreadorId()));
+
+    //     Examen examen = new Examen();
+    //     examen.setTitulo(dto.getTitulo());
+    //     examen.setDescripcion(dto.getDescripcion());
+    //     examen.setFechaInicio(dto.getFechaInicio());
+    //     examen.setFechaFin(dto.getFechaFin());
+    //     examen.setCreador(creador);
+    //     return ResponseEntity.ok(examenService.save(examen));
+    // }
 
     @Operation(summary = "Obtener un examen por ID del usuario ", description = "Retorna un examen específico basado en el ID proporcionado")
     @ApiResponse(responseCode = "200", description = "Examen encontrado correctamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Examen.class)))
