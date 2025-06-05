@@ -8,11 +8,17 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
 
 @Entity
 @Table(name = "examen")
-@Data
+@Getter
+@Setter
+@ToString(exclude = {"preguntas", "creador"})
+@EqualsAndHashCode(exclude = {"preguntas", "creador"})
 public class Examen {
 
     @Id

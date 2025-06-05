@@ -88,14 +88,15 @@ public class OpcionController {
         try {
             log.info("Buscando opciones para la pregunta con ID: {}", preguntaId);
             
+            // Verificar si existe la pregunta
             if (!preguntaRepository.existsById(preguntaId)) {
                 log.warn("No existe una pregunta con el ID: {}", preguntaId);
-                throw new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
+                throw new ResourceNotFoundException(
                         "No existe una pregunta con el ID: " + preguntaId
                 );
             }
 
+            // Obtener las opciones
             List<Opcion> opciones = opcionRepository.findByPreguntaId(preguntaId);
             log.info("Opciones encontradas: {}", opciones.size());
             
@@ -104,6 +105,7 @@ public class OpcionController {
                 return ResponseEntity.ok(Collections.emptyList());
             }
 
+            // Mapear a DTO
             List<OpcionDTO> opcionesDTO = opciones.stream()
                 .map(opcion -> {
                     OpcionDTO dto = new OpcionDTO();
@@ -119,8 +121,10 @@ public class OpcionController {
             return ResponseEntity.ok(opcionesDTO);
         } catch (Exception e) {
             log.error("Error al obtener opciones para la pregunta {}: {}", preguntaId, e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Collections.emptyList());
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al obtener las opciones: " + e.getMessage()
+            );  
         }
     }
 }

@@ -1,12 +1,18 @@
 package com.cesde.proyecto_integrador.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
 import java.util.List;
 
 @Entity
 @Table(name = "preguntas")
-@Data
+@Getter
+@Setter
+@ToString(exclude = {"examen", "opciones"})
+@EqualsAndHashCode(exclude = {"examen", "opciones"})
 public class Pregunta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
