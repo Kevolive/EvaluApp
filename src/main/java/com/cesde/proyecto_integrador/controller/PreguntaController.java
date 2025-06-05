@@ -13,7 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -88,35 +88,36 @@ public class PreguntaController {
 
     @Operation(summary = "Crear una nueva pregunta")
     @PostMapping
-    public ResponseEntity<Pregunta> createPregunta(@Valid @RequestBody PreguntaRequestDTO dto) {
+    public ResponseEntity<PreguntaDTO> createPregunta(@RequestBody PreguntaRequestDTO dto) {
+        // 1. Busca el examen por ID
         Examen examen = examenRepository.findById(dto.getExamenId())
-                .orElseThrow(() -> new RuntimeException("Examen no encontrado con ID: " + dto.getExamenId()));
+            .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "Examen no encontrado"));
 
+        // 2. Crea una nueva entidad Pregunta
         Pregunta pregunta = new Pregunta();
         pregunta.setTextoPregunta(dto.getTextoPregunta());
         pregunta.setTipoPregunta(dto.getTipoPregunta());
         pregunta.setExamen(examen);
-        // Aquí puedes setear los puntos si los tienes en la entidad Pregunta
-        // pregunta.setPuntos(dto.getPuntos()); 
 
-        // Ojo: Aquí sigues devolviendo la entidad Pregunta. 
-        // Si quieres devolver un DTO después de crear, también tendrías que mapearlo.
-        return ResponseEntity.ok(preguntaRepository.save(pregunta));
+        // 3. Guarda y devuelve como DTO
+        Pregunta savedPregunta = preguntaRepository.save(pregunta);
+        return ResponseEntity.ok(new PreguntaDTO(savedPregunta));
     }
 
     @Operation(summary = "Actualizar una pregunta existente")
     @PutMapping("/{id}")
-    public ResponseEntity<Pregunta> updatePregunta(@PathVariable Long id, @RequestBody Pregunta nuevaPregunta) {
-        // Aquí también estás esperando una entidad Pregunta en el @RequestBody
-        // y devolviendo una entidad Pregunta.
-        // Si quieres usar DTOs para actualizar, deberías usar PreguntaRequestDTO aquí también
-        // y mapear el DTO a la entidad.
+    public ResponseEntity<PreguntaDTO> updatePregunta(@PathVariable Long id, @RequestBody PreguntaRequestDTO dto) {
         return preguntaRepository.findById(id)
             .map(p -> {
-                p.setTextoPregunta(nuevaPregunta.getTextoPregunta());
-                p.setTipoPregunta(nuevaPregunta.getTipoPregunta());
-                p.setExamen(nuevaPregunta.getExamen());
-                return ResponseEntity.ok(preguntaRepository.save(p));
+                p.setTextoPregunta(dto.getTextoPregunta());
+                p.setTipoPregunta(dto.getTipoPregunta());
+                Examen examen = examenRepository.findById(dto.getExamenId())
+                    .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "Examen no encontrado"));
+                p.setExamen(examen);
+                
+                // Guarda y devuelve como DTO
+                Pregunta updatedPregunta = preguntaRepository.save(p);
+                return ResponseEntity.ok(new PreguntaDTO(updatedPregunta));
             }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
