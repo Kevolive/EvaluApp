@@ -21,7 +21,6 @@ public class Pregunta {
     // Relación con Examen
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "examen_id")
-    @JsonIgnore 
     private Examen examen;
 
     // Relación bidireccional con Opcion
