@@ -2,6 +2,7 @@ package com.cesde.proyecto_integrador.controller;
 
 import com.cesde.proyecto_integrador.dto.OpcionDTO;
 import com.cesde.proyecto_integrador.dto.OpcionRequestDTO;
+import com.cesde.proyecto_integrador.exception.ResourceNotFoundException;
 import com.cesde.proyecto_integrador.model.Opcion;
 import com.cesde.proyecto_integrador.model.Pregunta;
 import com.cesde.proyecto_integrador.repository.OpcionRepository;
@@ -41,24 +42,41 @@ public class OpcionController {
     @ApiResponse(responseCode = "201", description = "Opción creada exitosamente",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = Opcion.class)))
     @ApiResponse(responseCode = "404", description = "Pregunta no encontrada")
+    @ApiResponse(responseCode = "400", description = "Datos inválidos")
     @PostMapping
     public ResponseEntity<Opcion> createOpcion(@Valid @RequestBody OpcionRequestDTO dto) {
-        // Validar y obtener la pregunta
-        Pregunta pregunta = preguntaRepository.findById(dto.getPreguntaId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "No existe una pregunta con el ID: " + dto.getPreguntaId()
-                ));
+        try {
+            // Validar y obtener la pregunta
+            Pregunta pregunta = preguntaRepository.findById(dto.getPreguntaId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "No existe una pregunta con el ID: " + dto.getPreguntaId()
+                    ));
 
-        // Mapear DTO a Entidad
-        Opcion opcion = new Opcion();
-        opcion.setTextoOpcion(dto.getTextoOpcion());
-        opcion.setEsCorrecta(dto.getEsCorrecta()); // Usamos Boolean del DTO
-        opcion.setPregunta(pregunta);
+            // Verificar si ya existe una opción con el mismo texto para esta pregunta
+            if (opcionRepository.existsByTextoOpcionAndPreguntaId(dto.getTextoOpcion(), dto.getPreguntaId())) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Ya existe una opción con el mismo texto para esta pregunta"
+                );
+            }
 
-        // Guardar y retornar
-        Opcion savedOpcion = opcionRepository.save(opcion);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedOpcion);
+            // Mapear DTO a Entidad
+            Opcion opcion = new Opcion();
+            opcion.setTextoOpcion(dto.getTextoOpcion());
+            opcion.setEsCorrecta(dto.getEsCorrecta());
+            opcion.setPregunta(pregunta);
+
+            // Guardar y retornar
+            Opcion savedOpcion = opcionRepository.save(opcion);
+            log.info("Opción creada exitosamente: {}", savedOpcion);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedOpcion);
+        } catch (Exception e) {
+            log.error("Error al crear la opción: {}", e.getMessage(), e);
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al crear la opción: " + e.getMessage()
+            );
+        }
     }
 
     @Operation(summary = "Obtener opciones por pregunta")

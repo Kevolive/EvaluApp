@@ -14,4 +14,6 @@ public interface OpcionRepository extends JpaRepository<Opcion, Long> {
     @Query("SELECT o FROM Opcion o WHERE o.pregunta.id = :preguntaId")
     List<Opcion> findByPreguntaId(@Param("preguntaId") Long preguntaId);
 
+    boolean existsByTextoOpcionAndPreguntaId(String textoOpcion, Long preguntaId);
+
 }
