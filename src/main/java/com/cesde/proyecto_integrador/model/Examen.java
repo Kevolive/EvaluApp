@@ -1,11 +1,13 @@
 package com.cesde.proyecto_integrador.model;
 
 import java.time.LocalDate;
-import java.util.List;
 
 import jakarta.persistence.*;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Data;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "examen")
@@ -23,12 +25,8 @@ public class Examen {
     private LocalDate fechaFin;
 
     // Relación con User (creador del examen)
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "usuario_id")
     private User creador;  // Solo TEACHER
-
-    // Relación bidireccional con Pregunta
-    @ManyToMany(mappedBy = "examen", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-private List<Pregunta> preguntas;
     
 }
