@@ -3,9 +3,11 @@ package com.cesde.proyecto_integrador.model;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.Data;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+
 
 @Entity
 @Table(name = "examen")
@@ -29,6 +31,7 @@ public class Examen {
 
     // Relación bidireccional con Pregunta
     @ManyToMany(mappedBy = "examen", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-private List<Pregunta> preguntas;
+    @JsonIgnore
+    private List<Pregunta> preguntas;
     
 }
