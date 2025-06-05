@@ -33,7 +33,7 @@ public class Examen {
     private User creador;  // Solo TEACHER
 
     // Relación bidireccional con Pregunta
-    @OneToMany(mappedBy = "examen", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "examen", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Pregunta> preguntas;
     
