@@ -2,6 +2,7 @@ package com.cesde.proyecto_integrador.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import java.util.List;
 
 @Entity
 @Table(name = "preguntas")
@@ -20,6 +21,14 @@ public class Pregunta {
     @ManyToOne
     @JoinColumn(name = "examen_id")
     private Examen examen;
+
+    // Relación con Opcion
+    @OneToMany(mappedBy = "pregunta", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Opcion> opciones;
+
+    public List<Opcion> getOpciones() {
+        return opciones;
+    }
 
     public enum TipoPregunta {
         SELECCION_UNICA,

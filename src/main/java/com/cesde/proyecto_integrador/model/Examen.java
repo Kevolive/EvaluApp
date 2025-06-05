@@ -1,6 +1,7 @@
 package com.cesde.proyecto_integrador.model;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import jakarta.persistence.*;
 import jakarta.persistence.GeneratedValue;
@@ -28,5 +29,12 @@ public class Examen {
     @ManyToOne
     @JoinColumn(name = "usuario_id")
     private User creador;  // Solo TEACHER
-    
+
+    // Relación bidireccional con Pregunta
+    @OneToMany(mappedBy = "examen", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Pregunta> preguntas;
+
+    public void setPreguntas(List<Pregunta> preguntas) {
+        this.preguntas = preguntas;
+    }
 }
