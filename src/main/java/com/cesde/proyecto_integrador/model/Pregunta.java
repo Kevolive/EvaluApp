@@ -21,12 +21,10 @@ public class Pregunta {
     // Relación con Examen
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "examen_id")
-    @JsonIgnore
     private Examen examen;
 
     // Relación bidireccional con Opcion
     @OneToMany(mappedBy = "pregunta", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JsonIgnore
     private List<Opcion> opciones;
 
     public enum TipoPregunta {
