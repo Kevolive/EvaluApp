@@ -7,6 +7,8 @@ import lombok.ToString;
 import lombok.EqualsAndHashCode;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "preguntas")
 @Getter
@@ -26,6 +28,7 @@ public class Pregunta {
     // Relación con Examen
     @ManyToOne
     @JoinColumn(name = "examen_id")
+    @JsonIgnore
     private Examen examen;
 
     // Relación con Opcion
