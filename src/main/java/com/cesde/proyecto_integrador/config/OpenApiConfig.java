@@ -21,7 +21,7 @@ public class OpenApiConfig {
                         .name("CESDE")
                         .email("kevinolivella@gmail.com")))
                 .addServersItem(new Server()
-                .url("http:https://evaluapp.onrender.com/")
+                .url("https://evaluapp.onrender.com/")
                 .description("Servidor en la nube")
                 );                
     }
