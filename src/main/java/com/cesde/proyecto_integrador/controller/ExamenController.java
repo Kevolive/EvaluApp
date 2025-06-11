@@ -31,7 +31,7 @@ import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+
 import java.util.Objects;
 
 @RestController
@@ -62,9 +62,10 @@ public class ExamenController {
     @Operation(summary = "Obtener todos los exámenes", description = "Retorna una lista con todos los exámenes disponibles en formato DTO")
     @ApiResponse(responseCode = "200", description = "Lista de exámenes obtenida correctamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ExamenDTO.class)))
     @GetMapping
-public ResponseEntity<List<ExamenDTO>> getAllExams() {
+    public ResponseEntity<List<ExamenDTO>> getAllExams() {
     try {
         List<Examen> exams = examenService.findAll();
+
         List<ExamenDTO> examDTOs = exams.stream()
             .map(examen -> {
                 ExamenDTO dto = new ExamenDTO();
@@ -74,7 +75,7 @@ public ResponseEntity<List<ExamenDTO>> getAllExams() {
                 dto.setFechaInicio(examen.getFechaInicio());
                 dto.setFechaFin(examen.getFechaFin());
 
-                // ⚠️ Validar que el creador no sea null
+                // Validar creador
                 if (examen.getCreador() != null) {
                     dto.setCreadorId(examen.getCreador().getId());
 
@@ -85,14 +86,14 @@ public ResponseEntity<List<ExamenDTO>> getAllExams() {
                     dto.setCreadorNombre("Desconocido");
                 }
 
-                // ⚠️ Validar preguntas no nulas
+                // Validar preguntas
                 if (examen.getPreguntas() != null && !examen.getPreguntas().isEmpty()) {
                     dto.setPreguntasIds(
                         examen.getPreguntas().stream()
                             .filter(Objects::nonNull)
                             .map(Pregunta::getId)
                             .filter(Objects::nonNull)
-                            .collect(Collectors.toList())
+                            .toList()
                     );
                 } else {
                     dto.setPreguntasIds(Collections.emptyList());
@@ -100,16 +101,16 @@ public ResponseEntity<List<ExamenDTO>> getAllExams() {
 
                 return dto;
             })
-            .collect(Collectors.toList());
+            .toList();
 
         return ResponseEntity.ok(examDTOs);
     } catch (Exception e) {
-       
         log.error("Error al obtener los exámenes", e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(Collections.emptyList());
+                .body(Collections.emptyList());
     }
 }
+
 
 
     @Operation(summary = "Crear un nuevo examen", description = "Crea un nuevo examen con la información proporcionada")
