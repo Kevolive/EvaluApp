@@ -30,6 +30,7 @@ import com.cesde.proyecto_integrador.dto.ExamenRequestDTO;
 import jakarta.validation.Valid;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/examenes")
@@ -157,7 +158,46 @@ public ResponseEntity<ExamenDTO> createExamen(@Valid @RequestBody ExamenRequestD
     //     examen.setCreador(creador);
     //     return ResponseEntity.ok(examenService.save(examen));
     // }
-
+    @PostMapping("/{id}/preguntas")
+    public ResponseEntity<String> asociarPreguntas(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> payload) {
+    
+        try {
+            Examen examen = examenService.findById(id);
+            if (examen == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Examen no encontrado");
+            }
+    
+            List<?> ids = (List<?>) payload.get("preguntas");
+    
+            if (ids == null || ids.isEmpty()) {
+                return ResponseEntity.badRequest().body("La lista de preguntas no puede estar vacía");
+            }
+    
+            // ✅ Conversión segura a List<Long>
+            List<Long> preguntasIds = ids.stream()
+                .map(rawId -> {
+                    if (rawId instanceof Number) {
+                        return ((Number) rawId).longValue();
+                    } else {
+                        return Long.valueOf(rawId.toString());
+                    }
+                })
+                .toList();
+    
+            List<Pregunta> preguntas = PreguntaRepository.findAllById(preguntasIds);
+            examen.setPreguntas(preguntas);
+            examenService.save(examen);
+    
+            return ResponseEntity.ok("Preguntas asociadas correctamente");
+    
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error al asociar preguntas: " + e.getMessage());
+        }
+    }
+    
     @Operation(summary = "Obtener un examen por ID del usuario ", description = "Retorna un examen específico basado en el ID proporcionado")
     @ApiResponse(responseCode = "200", description = "Examen encontrado correctamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Examen.class)))
     @ApiResponse(responseCode = "404", description = "Examen no encontrado")
