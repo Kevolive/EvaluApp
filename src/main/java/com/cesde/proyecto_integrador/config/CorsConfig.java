@@ -11,12 +11,12 @@ public class CorsConfig {
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
-            @SuppressWarnings("null")
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // Permite CORS en todos los endpoints
-                        .allowedOrigins("https://b2pi2-876585927226.us-central1.run.app") // Origen permitido
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Métodos HTTP permitidos
+                        .allowedOrigins("https://b2pi2-876585927226.us-central1.run.app", "http://localhost:5173") // Origen
+                                                                                                                   // permitido
+                        .allowedMethods("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS") // Métodos HTTP permitidos
                         .allowedHeaders("*") // Todos los encabezados permitidos
                         .allowCredentials(true); // Si necesitas enviar cookies o autenticación
             }

@@ -34,6 +34,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/examenes")
+@CrossOrigin(origins = "http://localhost:5173")
 @Tag(name = "Examenes", description = "API para gestionar examenes")
 public class ExamenController {
 
