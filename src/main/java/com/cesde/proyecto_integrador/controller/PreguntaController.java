@@ -2,19 +2,23 @@ package com.cesde.proyecto_integrador.controller;
 
 import com.cesde.proyecto_integrador.model.Pregunta;
 import com.cesde.proyecto_integrador.model.Examen;
+import com.cesde.proyecto_integrador.model.Opcion;
 import com.cesde.proyecto_integrador.dto.PreguntaRequestDTO;
 import com.cesde.proyecto_integrador.dto.PreguntaDTO; // ¡Importa tu DTO de salida!
 import com.cesde.proyecto_integrador.repository.PreguntaRepository;
+import com.cesde.proyecto_integrador.service.ExamenService;
 import com.cesde.proyecto_integrador.repository.ExamenRepository;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +36,9 @@ public class PreguntaController {
 
     @Autowired
     private ExamenRepository examenRepository;
+
+    @Autowired
+    private ExamenService examenService;
 
     // --- MÉTODOS GET MODIFICADOS PARA USAR PreguntaDTO ---
 
@@ -88,21 +95,30 @@ public class PreguntaController {
 
     @Operation(summary = "Crear una nueva pregunta")
     @PostMapping
-    public ResponseEntity<PreguntaDTO> createPregunta(@RequestBody PreguntaRequestDTO dto) {
-        // 1. Busca el examen por ID
-        Examen examen = examenRepository.findById(dto.getExamenId())
-            .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "Examen no encontrado"));
+public ResponseEntity<?> crearPregunta(@RequestBody @Valid PreguntaRequestDTO dto) {
+    // Crear la entidad base Pregunta
+    Pregunta pregunta = new Pregunta();
+    pregunta.setTextoPregunta(dto.getTextoPregunta());
+    pregunta.setTipoPregunta(dto.getTipoPregunta());
+    pregunta.setExamen(examenService.findById(dto.getExamenId()));
+    pregunta.setPuntos(dto.getPuntos());
 
-        // 2. Crea una nueva entidad Pregunta
-        Pregunta pregunta = new Pregunta();
-        pregunta.setTextoPregunta(dto.getTextoPregunta());
-        pregunta.setTipoPregunta(dto.getTipoPregunta());
-        pregunta.setExamen(examen);
+    // Insertar aquí el mapeo de opciones recibidas en el DTO
+    if (dto.getOpciones() != null && !dto.getOpciones().isEmpty()) {
+        List<Opcion> opciones = dto.getOpciones().stream().map(optDto -> {
+            Opcion op = new Opcion();
+            op.setTextoOpcion(optDto.getTextoOpcion());
+            op.setEsCorrecta(optDto.getEsCorrecta());
+            op.setPregunta(pregunta); // ⚠️ Establecer relación con pregunta
+            return op;
+        }).toList();
 
-        // 3. Guarda y devuelve como DTO
-        Pregunta savedPregunta = preguntaRepository.save(pregunta);
-        return ResponseEntity.ok(new PreguntaDTO(savedPregunta));
+        pregunta.setOpciones(opciones);  // Asignar lista final a la entidad
     }
+
+    Pregunta guardada = preguntaRepository.save(pregunta);
+    return ResponseEntity.status(HttpStatus.CREATED).body(new PreguntaDTO(guardada));
+}
 
     @Operation(summary = "Actualizar una pregunta existente")
     @PutMapping("/{id}")

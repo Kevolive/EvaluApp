@@ -13,8 +13,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Table(name = "preguntas")
 @Getter
 @Setter
-@ToString(exclude = {"examen", "opciones"})
-@EqualsAndHashCode(exclude = {"examen", "opciones"})
+@ToString(exclude = { "examen", "opciones" })
+@EqualsAndHashCode(exclude = { "examen", "opciones" })
 public class Pregunta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,6 +24,17 @@ public class Pregunta {
 
     @Enumerated(EnumType.STRING)
     private TipoPregunta tipoPregunta; // Ej: SELECCION_UNICA, MULTIPLE, TEXTO
+
+    @Column(name = "puntos")
+    private int puntos = 1;
+
+    public int getPuntos() {
+        return puntos;
+    }
+
+    public void setPuntos(int puntos) {
+        this.puntos = puntos;
+    }
 
     // Relación con Examen
     @ManyToOne

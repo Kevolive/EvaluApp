@@ -4,6 +4,7 @@ import com.cesde.proyecto_integrador.model.Pregunta.TipoPregunta;
 import jakarta.validation.constraints.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import java.util.List;
 
 @Data
 public class PreguntaRequestDTO {
@@ -24,4 +25,7 @@ public class PreguntaRequestDTO {
     @Schema(description = "Puntaje que vale esta pregunta", example = "5")
     @Min(value = 1, message = "Los puntos deben ser al menos 1")
     private int puntos = 1;
+
+    @Schema(description = "Opciones asociadas a la pregunta")
+private List<OpcionRequestDTO> opciones;
 }

@@ -15,9 +15,8 @@ public class OpcionRequestDTO {
     @NotNull(message = "Debe indicar si la opción es correcta o no")
     private Boolean esCorrecta;
 
-    @Schema(description = "ID de la pregunta a la que pertenece", example = "4")
-    @NotNull(message = "Debe especificar el ID de la pregunta")
-    private Long preguntaId;
+    @Schema(description = "ID de la pregunta a la que pertenece (opcional en creación)")
+private Long preguntaId;
 
     // --- Getters y Setters ---
     public String getTextoOpcion() {
