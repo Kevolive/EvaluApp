@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.EqualsAndHashCode;
+
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -16,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @ToString(exclude = { "examen", "opciones" })
 @EqualsAndHashCode(exclude = { "examen", "opciones" })
 public class Pregunta {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,32 +25,21 @@ public class Pregunta {
     private String textoPregunta;
 
     @Enumerated(EnumType.STRING)
-    private TipoPregunta tipoPregunta; // Ej: SELECCION_UNICA, MULTIPLE, TEXTO
+    private TipoPregunta tipoPregunta;
 
+    
     @Column(name = "puntos")
-    private int puntos = 1;
+    private Integer puntos = 1;
 
-    public int getPuntos() {
-        return puntos;
-    }
 
-    public void setPuntos(int puntos) {
-        this.puntos = puntos;
-    }
-
-    // Relación con Examen
     @ManyToOne
     @JoinColumn(name = "examen_id")
     @JsonIgnore
     private Examen examen;
 
-    // Relación con Opcion
+    // ✅ Relación con Opcion
     @OneToMany(mappedBy = "pregunta", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Opcion> opciones;
-
-    public List<Opcion> getOpciones() {
-        return opciones;
-    }
 
     public enum TipoPregunta {
         SELECCION_UNICA,
