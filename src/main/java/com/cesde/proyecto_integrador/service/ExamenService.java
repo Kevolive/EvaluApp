@@ -1,8 +1,6 @@
 package com.cesde.proyecto_integrador.service;
 
-
 import java.util.List;
-
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,6 +17,7 @@ public class ExamenService {
     public List<Examen> findAll() {
         return examRepository.findAll();
     }
+
     public Examen findById(Long id) {
         return examRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Examen no encontrado con id: " + id));
@@ -36,6 +35,15 @@ public class ExamenService {
     }
 
     public void delete(Long id) {
-        examRepository.deleteById(id);
+        Examen examen = examRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Examen no encontrado con id: " + id));
+
+        if (examen.getPreguntas() != null && !examen.getPreguntas().isEmpty()) {
+            examen.getPreguntas().clear();
+        }
+
+        examRepository.save(examen);
+
+        examRepository.delete(examen);
     }
 }
